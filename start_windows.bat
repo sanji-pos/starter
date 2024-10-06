@@ -5,7 +5,7 @@ setlocal
 start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 
 :: Wait for Docker to start (adjust the timeout as needed)
-timeout 10
+timeout 60
 
 :: Check and create volumes/pg directory if it doesn't exist
 if not exist "volumes\pg" (
