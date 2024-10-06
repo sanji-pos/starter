@@ -4,8 +4,23 @@ setlocal
 :: Start Docker Desktop
 start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 
-:: Wait for Docker to start (adjust the timeout as needed)
-timeout 60
+:: Initialize attempt counter
+set attempts=0
+set max_attempts=10
+
+:: Wait for Docker to be ready
+:waitForDocker
+timeout 30
+docker info >nul 2>&1
+if errorlevel 1 (
+    echo Waiting for Docker daemon to be ready...
+    set /a attempts+=1
+    if %attempts% geq %max_attempts% (
+        echo Docker daemon did not start after %max_attempts% attempts. Exiting.
+        exit /b 1
+    )
+    goto waitForDocker
+)
 
 :: Check and create volumes/pg directory if it doesn't exist
 if not exist "volumes\pg" (
