@@ -1,8 +1,5 @@
 @echo off
-setlocal
-
-:: Start Docker Desktop
-start "" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+setlocal EnableDelayedExpansion
 
 :: Initialize attempt counter
 set attempts=0
@@ -28,18 +25,32 @@ if not exist "volumes\pg" (
     mkdir "volumes\pg"
 )
 
-:: Get the IPv4 Address
+:: Get all IPv4 Addresses and find the first one that does not end with '1'
+set "ip="
 for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /i "IPv4"') do (
-    set ip=%%A
+    set temp_ip=%%A
+    set temp_ip=!temp_ip:~1!
+
+    :: Validate the last digit of the IP address
+    set last_digit=!temp_ip:~-1!
+    if not "!last_digit!"=="1" (
+        set "ip=!temp_ip!"
+        goto found_ip
+    )
 )
 
-:: Trim leading spaces from IP address
-set ip=%ip:~1%
+:found_ip
+if defined ip (
+    echo Setting HOST_PRIVATE_IP to !ip!
+) else (
+    echo No valid IP address found. Exiting.
+    exit /b 1
+)
 
 :: Pull the latest changes from the git repository
 git pull
 
-echo Running in %ip%
+echo Running in !ip!
 
 :: Stop and remove the existing Docker container
 docker stop local-sanji
@@ -54,6 +65,6 @@ docker image prune -a -f --filter "until=730h"
 docker pull sanjidev/gateway:latest
 
 :: Run the Docker container
-docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=%ip% -p 3000:3000 -v "%cd%\volumes\pg:/var/lib/postgresql/data" -w /var/lib/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "%cd%\volumes\pg:/var/lib/postgresql/data" -w /var/lib/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
 
 endlocal
