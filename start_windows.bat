@@ -66,6 +66,6 @@ docker image prune -a -f --filter "until=730h"
 docker pull sanjidev/gateway:latest
 
 :: Run the Docker container
-docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:test
 
 endlocal
