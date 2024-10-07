@@ -7,7 +7,6 @@ set max_attempts=10
 
 :: Wait for Docker to be ready
 :waitForDocker
-timeout 30
 docker info >nul 2>&1
 if errorlevel 1 (
     echo Waiting for Docker daemon to be ready...
@@ -58,6 +57,8 @@ timeout 5
 docker rm local-sanji
 timeout 5
 
+docker volume create kosmodb
+
 :: Prune unused images
 docker image prune -a -f --filter "until=730h"
 
@@ -65,6 +66,6 @@ docker image prune -a -f --filter "until=730h"
 docker pull sanjidev/gateway:latest
 
 :: Run the Docker container
-docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "%cd%\volumes\pg:/var/lib/postgresql/data" -w /var/lib/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
 
 endlocal
