@@ -30,7 +30,7 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /i "IPv4"') do (
     set temp_ip=%%A
     set temp_ip=!temp_ip:~1!
 
-    :: Validate the last digit of the IP address
+    :: Validate the last 2 digits of the IP address
     set last_two_chars=!temp_ip:~-2!
     if "!last_two_chars!"==".1" (
         set "ip=!temp_ip!"
