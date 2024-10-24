@@ -22,4 +22,4 @@ docker image prune -a -f --filter "until=730h"
 docker pull sanjidev/gateway:latest
 
 # Ejecuta el comando docker run con la variable de entorno
-docker run --platform linux/amd64 -e HOST_PRIVATE_IP=$HOST_IP -p 3000:3000 -v ./volumes/pg:/home/nextjs/postgresql/data -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+docker run --pull always --platform linux/amd64 -e HOST_PRIVATE_IP=$HOST_IP -p 3000:3000 -v ./volumes/pg:/home/nextjs/postgresql/data -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest || docker run --platform linux/amd64 -e HOST_PRIVATE_IP=$HOST_IP -p 3000:3000 -v ./volumes/pg:/home/nextjs/postgresql/data -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
