@@ -31,8 +31,8 @@ for /f "tokens=2 delims=:" %%A in ('ipconfig ^| findstr /i "IPv4"') do (
     set temp_ip=!temp_ip:~1!
 
     :: Validate the last digit of the IP address
-    set last_digit=!temp_ip:~-1!
-    if not "!last_digit!"=="1" (
+    set last_two_chars=!temp_ip:~-2!
+    if "!last_two_chars!"==".1" (
         set "ip=!temp_ip!"
         goto found_ip
     )
@@ -65,7 +65,31 @@ docker image prune -a -f --filter "until=730h"
 :: Pull the latest Docker image
 docker pull sanjidev/gateway:latest
 
-:: Run the Docker container
-docker run --pull always -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+:: Initialize retry attempt for docker run command
+set docker_run_attempts=0
+set max_docker_run_attempts=3
+set use_pull_flag=true
+
+:runDockerContainer
+if "!use_pull_flag!"=="true" (
+    docker run --pull always -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+) else (
+    docker run -d -u nextjs --platform linux/amd64 -e HOST_PRIVATE_IP=!ip! -p 3000:3000 -v "kosmodb:/home/nextjs/postgresql/data" -w /home/nextjs/postgresql/data --name local-sanji --rm sanjidev/gateway:latest
+)
+
+if errorlevel 1 (
+    echo Docker run failed. Retrying...
+    set /a docker_run_attempts+=1
+    if %docker_run_attempts% geq %max_docker_run_attempts% (
+        echo Docker run failed after %max_docker_run_attempts% attempts. Exiting.
+        exit /b 1
+    )
+    :: Remove the --pull always flag for the next attempt
+    set use_pull_flag=false
+    timeout /t 5 >nul
+    goto runDockerContainer
+)
+
+echo Docker container is running successfully.
 
 endlocal
