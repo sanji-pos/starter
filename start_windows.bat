@@ -1,6 +1,8 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+git reset --hard HEAD
+
 :: Initialize attempt counter
 set attempts=0
 set max_attempts=10

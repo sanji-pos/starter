@@ -1,5 +1,7 @@
 #!/bin/bash
 
+git reset --hard HEAD
+
 git pull
 
 # Obtiene la dirección IP privada de la Mac
